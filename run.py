@@ -27,7 +27,7 @@ def run_experiments(isbigram=True, islstm=True, nfolds=10):
 
     return bigram_results, lstm_results
 
-def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
+def create_figs(isbigram=False, islstm=True, nfolds=10, force=False):
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):

@@ -6,9 +6,10 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
+from keras.callbacks import TensorBoard
 import sklearn
 from sklearn.cross_validation import train_test_split
-
+import json
 
 def build_model(max_features, maxlen):
     """Build LSTM model"""
@@ -34,6 +35,8 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     # Generate a dictionary of valid characters
     valid_chars = {x:idx+1 for idx, x in enumerate(set(''.join(X)))}
+    with open('dict.json', 'w') as f:
+            f.write(json.dumps(valid_chars))
 
     max_features = len(valid_chars) + 1
     maxlen = np.max([len(x) for x in X])
@@ -47,9 +50,11 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     final_data = []
 
+    tb = TensorBoard(log_dir='./logs', histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)
+
     for fold in range(nfolds):
         print "fold %u/%u" % (fold+1, nfolds)
-        X_train, X_test, y_train, y_test, _, label_test = train_test_split(X, y, labels, 
+        X_train, X_test, y_train, y_test, _, label_test = train_test_split(X, y, labels,
                                                                            test_size=0.2)
 
         print 'Build model...'
@@ -62,7 +67,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
         out_data = {}
 
         for ep in range(max_epoch):
-            model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=1)
+            model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=1, callbacks=[tb])
 
             t_probs = model.predict_proba(X_holdout)
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
@@ -85,5 +90,9 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
                     break
 
         final_data.append(out_data)
+
+    model.save_weights('model.hdf5')
+    with open('model.json', 'w') as f:
+            f.write(model.to_json())
 
     return final_data

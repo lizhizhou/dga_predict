@@ -13,14 +13,15 @@ from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
     dircrypt, kraken, lockyv2, pykspa, qakbot, ramdo, ramnit, simda
 
 # Location of Alexa 1M
-ALEXA_1M = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
+ALEXA_1M = 'top-1m.csv.zip'
 
 # Our ourput file containg all the training data
 DATA_FILE = 'traindata.pkl'
 
 def get_alexa(num, address=ALEXA_1M, filename='top-1m.csv'):
     """Grabs Alexa 1M"""
-    url = urlopen(address)
+    #url = urlopen(address)
+    url = open(address, 'rb')
     zipfile = ZipFile(StringIO(url.read()))
     return [tldextract.extract(x.split(',')[1]).domain for x in \
             zipfile.read(filename).split()[:num]]
