@@ -64,9 +64,11 @@ def create_figs(isbigram=False, islstm=True, nfolds=10, force=False):
     # Save figure
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
-        plt.plot(lstm_binary_fpr, lstm_binary_tpr,
+        if results['lstm']:
+            plt.plot(lstm_binary_fpr, lstm_binary_tpr,
                  label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
-        plt.plot(bigram_binary_fpr, bigram_binary_tpr,
+        if results['bigram']:
+            plt.plot(bigram_binary_fpr, bigram_binary_tpr,
                  label='Bigrams (AUC = %.4f)' % (bigram_binary_auc, ), rasterized=True)
 
         plt.xlim([0.0, 1.0])

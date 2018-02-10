@@ -6,16 +6,19 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
+from keras.layers.recurrent import GRU
 from keras.callbacks import TensorBoard
 import sklearn
 from sklearn.cross_validation import train_test_split
+
 import json
 
 def build_model(max_features, maxlen):
     """Build LSTM model"""
     model = Sequential()
     model.add(Embedding(max_features, 128, input_length=maxlen))
-    model.add(LSTM(128))
+    #model.add(LSTM(128))
+    model.add(GRU(64))
     model.add(Dropout(0.5))
     model.add(Dense(1))
     model.add(Activation('sigmoid'))
@@ -71,8 +74,9 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
             t_probs = model.predict_proba(X_holdout)
             t_auc = sklearn.metrics.roc_auc_score(y_holdout, t_probs)
-
-            print 'Epoch %d: auc = %f (best=%f)' % (ep, t_auc, best_auc)
+            y_est = [1 if x > 0.5 else 0 for x in t_probs]
+            f1 = sklearn.metrics.f1_score(y_holdout,y_est)
+            print 'Epoch %d: auc = %f (best=%f) f1 = %f' % (ep, t_auc, best_auc, f1)
 
             if t_auc > best_auc:
                 best_auc = t_auc
